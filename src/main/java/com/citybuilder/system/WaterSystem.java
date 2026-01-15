@@ -63,15 +63,17 @@ public class WaterSystem {
                 int nx = current.getX() + dir[0];
                 int ny = current.getY() + dir[1];
                 
-                Tile neighbor = map.getTile(nx, ny);
-                if (neighbor != null && !visited.contains(neighbor)) {
-                    visited.add(neighbor);
-                    neighbor.setHasWater(true);
-                    distances.put(neighbor, currentDist + 1);
-                    
-                    // Continue spreading if there's a road or building
-                    if (neighbor.getBuilding() != null) {
-                        queue.add(neighbor);
+                if (map.isValidPosition(nx, ny)) {
+                    Tile neighbor = map.getTile(nx, ny);
+                    if (neighbor != null && !visited.contains(neighbor)) {
+                        visited.add(neighbor);
+                        neighbor.setHasWater(true);
+                        distances.put(neighbor, currentDist + 1);
+                        
+                        // Continue spreading if there's a road or building
+                        if (neighbor.getBuilding() != null) {
+                            queue.add(neighbor);
+                        }
                     }
                 }
             }
