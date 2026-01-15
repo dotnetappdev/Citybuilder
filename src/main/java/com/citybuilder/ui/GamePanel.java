@@ -15,22 +15,44 @@ public class GamePanel extends JPanel {
     private Point dragStart;
     private BuildingType selectedBuilding;
     private ToolMode toolMode;
+    private RadialMenu radialMenu;
     
     public GamePanel(GameState gameState) {
         this.gameState = gameState;
         this.toolMode = ToolMode.NONE;
+        this.radialMenu = new RadialMenu();
+        
+        setLayout(null); // Allow absolute positioning for radial menu
+        add(radialMenu);
+        radialMenu.setBounds(0, 0, 2000, 2000);
         
         setBackground(new Color(100, 150, 100));
         setFocusable(true);
         
+        // Setup radial menu listener
+        radialMenu.setListener(item -> {
+            Object data = item.getData();
+            if (data instanceof ToolMode) {
+                setToolMode((ToolMode) data);
+            } else if (data instanceof BuildingType) {
+                setSelectedBuilding((BuildingType) data);
+            }
+        });
+        
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (SwingUtilities.isMiddleMouseButton(e) || 
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    // Show radial menu on right-click
+                    radialMenu.show(e.getPoint());
+                    repaint();
+                } else if (SwingUtilities.isMiddleMouseButton(e) || 
                     (SwingUtilities.isLeftMouseButton(e) && e.isControlDown())) {
                     dragStart = e.getPoint();
                 } else if (SwingUtilities.isLeftMouseButton(e)) {
-                    handleClick(e.getX(), e.getY());
+                    if (!radialMenu.isVisible()) {
+                        handleClick(e.getX(), e.getY());
+                    }
                 }
             }
             
@@ -97,6 +119,11 @@ public class GamePanel extends JPanel {
                     if (selectedBuilding != null && tile.isEmpty()) {
                         if (gameState.spendMoney(selectedBuilding.getCost())) {
                             tile.setBuilding(new Building(selectedBuilding));
+                            
+                            // If it's a traffic light, also add to traffic light list
+                            if (selectedBuilding == BuildingType.TRAFFIC_LIGHT) {
+                                gameState.addTrafficLight(new TrafficLight(gridPos.x, gridPos.y));
+                            }
                         } else {
                             JOptionPane.showMessageDialog(this, "Not enough money!");
                         }
@@ -188,6 +215,16 @@ public class GamePanel extends JPanel {
                 Tile tile = map.getTile(x, y);
                 renderTile(g2d, tile, x, y);
             }
+        }
+        
+        // Render vehicles
+        for (Vehicle vehicle : gameState.getVehicles()) {
+            renderVehicle(g2d, vehicle);
+        }
+        
+        // Render traffic lights
+        for (TrafficLight light : gameState.getTrafficLights()) {
+            renderTrafficLight(g2d, light);
         }
     }
     
@@ -305,6 +342,7 @@ public class GamePanel extends JPanel {
             case FIRE_STATION:
                 return new Color(200, 50, 50);
             case SCHOOL:
+            case LIBRARY:
                 return new Color(200, 200, 50);
             case HOSPITAL:
                 return new Color(200, 100, 100);
@@ -313,7 +351,18 @@ public class GamePanel extends JPanel {
             case OFFICE:
                 return new Color(150, 150, 200);
             case SHOP:
+            case MALL:
                 return new Color(100, 200, 200);
+            case RESTAURANT:
+                return new Color(220, 120, 60);
+            case FAST_FOOD:
+                return new Color(255, 165, 0);
+            case PETROL_STATION:
+                return new Color(180, 180, 0);
+            case CINEMA:
+                return new Color(160, 82, 160);
+            case GYM:
+                return new Color(150, 200, 100);
             case TOWN_HALL:
                 return new Color(180, 140, 100);
             case POWER_PLANT:
@@ -324,6 +373,8 @@ public class GamePanel extends JPanel {
                 return new Color(80, 80, 80);
             case ROUNDABOUT:
                 return new Color(100, 100, 100);
+            case TRAFFIC_LIGHT:
+                return new Color(50, 50, 50);
             case PARK:
                 return new Color(50, 150, 50);
             default:
@@ -348,6 +399,14 @@ public class GamePanel extends JPanel {
             case ROAD: return "═";
             case ROUNDABOUT: return "◯";
             case PARK: return "PARK";
+            case RESTAURANT: return "REST";
+            case FAST_FOOD: return "FF";
+            case PETROL_STATION: return "GAS";
+            case TRAFFIC_LIGHT: return "⚡";
+            case MALL: return "MALL";
+            case CINEMA: return "CIN";
+            case GYM: return "GYM";
+            case LIBRARY: return "LIB";
             default: return "?";
         }
     }
@@ -369,6 +428,54 @@ public class GamePanel extends JPanel {
                 g2d.fillOval(x - 6, y - 6, 12, 12);
                 break;
         }
+    }
+    
+    private void renderVehicle(Graphics2D g2d, Vehicle vehicle) {
+        Camera camera = gameState.getCamera();
+        CityMap map = gameState.getCityMap();
+        
+        // Apply rotation
+        Point rotated = camera.applyRotation(vehicle.getX(), vehicle.getY(), map.getWidth(), map.getHeight());
+        
+        // Convert to screen coordinates
+        Point screen = IsometricUtils.gridToScreen(rotated.x, rotated.y, 0);
+        
+        // Apply camera offset
+        int screenX = screen.x + camera.getOffsetX();
+        int screenY = screen.y + camera.getOffsetY();
+        
+        // Draw vehicle as a colored rectangle
+        g2d.setColor(vehicle.getType().getColor());
+        g2d.fillRect(screenX - 8, screenY - 4, 16, 8);
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(screenX - 8, screenY - 4, 16, 8);
+    }
+    
+    private void renderTrafficLight(Graphics2D g2d, TrafficLight light) {
+        Camera camera = gameState.getCamera();
+        CityMap map = gameState.getCityMap();
+        
+        // Apply rotation
+        Point rotated = camera.applyRotation(light.getX(), light.getY(), map.getWidth(), map.getHeight());
+        
+        // Convert to screen coordinates
+        Point screen = IsometricUtils.gridToScreen(rotated.x, rotated.y, 0);
+        
+        // Apply camera offset
+        int screenX = screen.x + camera.getOffsetX();
+        int screenY = screen.y + camera.getOffsetY() - 20;
+        
+        // Draw traffic light pole
+        g2d.setColor(Color.DARK_GRAY);
+        g2d.fillRect(screenX - 2, screenY, 4, 15);
+        
+        // Draw traffic light box
+        g2d.setColor(Color.BLACK);
+        g2d.fillRect(screenX - 6, screenY - 12, 12, 12);
+        
+        // Draw colored light
+        g2d.setColor(light.getState().getColor());
+        g2d.fillOval(screenX - 4, screenY - 10, 8, 8);
     }
     
     public void setToolMode(ToolMode mode) {

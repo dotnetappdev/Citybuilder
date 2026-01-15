@@ -19,10 +19,20 @@ public class GameState {
     private CityMap cityMap;
     private int money;
     private int population;
+    private int monthlyIncome;
+    private int monthlyExpenses;
+    private int gameMonth;
+    private double cityHappiness;
+    private List<Resident> residents;
+    private List<Vehicle> vehicles;
+    private List<TrafficLight> trafficLights;
     private transient Camera camera;
     
     public GameState() {
         this.camera = new Camera();
+        this.residents = new ArrayList<>();
+        this.vehicles = new ArrayList<>();
+        this.trafficLights = new ArrayList<>();
     }
     
     public void initializeNewGame() {
@@ -30,6 +40,13 @@ public class GameState {
         this.money = 50000;
         this.population = 0;
         this.camera = new Camera();
+        this.residents = new ArrayList<>();
+        this.vehicles = new ArrayList<>();
+        this.trafficLights = new ArrayList<>();
+        this.gameMonth = 0;
+        this.monthlyIncome = 0;
+        this.monthlyExpenses = 0;
+        this.cityHappiness = 75.0;
     }
     
     public CityMap getCityMap() {
@@ -66,6 +83,121 @@ public class GameState {
     
     public Camera getCamera() {
         return camera;
+    }
+    
+    public List<Resident> getResidents() {
+        return residents;
+    }
+    
+    public List<Vehicle> getVehicles() {
+        return vehicles;
+    }
+    
+    public List<TrafficLight> getTrafficLights() {
+        return trafficLights;
+    }
+    
+    public void addResident(Resident resident) {
+        residents.add(resident);
+        population++;
+    }
+    
+    public void addVehicle(Vehicle vehicle) {
+        vehicles.add(vehicle);
+    }
+    
+    public void addTrafficLight(TrafficLight light) {
+        trafficLights.add(light);
+    }
+    
+    public int getMonthlyIncome() {
+        return monthlyIncome;
+    }
+    
+    public int getMonthlyExpenses() {
+        return monthlyExpenses;
+    }
+    
+    public int getGameMonth() {
+        return gameMonth;
+    }
+    
+    public double getCityHappiness() {
+        return cityHappiness;
+    }
+    
+    public void updateMonthly() {
+        gameMonth++;
+        
+        // Calculate income and expenses
+        monthlyIncome = 0;
+        monthlyExpenses = 0;
+        
+        for (int x = 0; x < cityMap.getWidth(); x++) {
+            for (int y = 0; y < cityMap.getHeight(); y++) {
+                Tile tile = cityMap.getTile(x, y);
+                Building building = tile.getBuilding();
+                if (building != null) {
+                    monthlyIncome += building.getType().getMonthlyIncome();
+                    monthlyExpenses += building.getType().getMonthlyCost();
+                }
+            }
+        }
+        
+        int netIncome = monthlyIncome - monthlyExpenses;
+        addMoney(netIncome);
+        
+        // Update city happiness
+        updateCityHappiness();
+        
+        // Update residents
+        for (Resident resident : residents) {
+            resident.updateMood();
+        }
+    }
+    
+    private void updateCityHappiness() {
+        if (residents.isEmpty()) {
+            cityHappiness = 75.0;
+            return;
+        }
+        
+        double totalHappiness = 0;
+        for (Resident resident : residents) {
+            totalHappiness += resident.getHappiness();
+        }
+        cityHappiness = totalHappiness / residents.size();
+    }
+    
+    public void updateTraffic() {
+        // Update traffic lights
+        for (TrafficLight light : trafficLights) {
+            light.update();
+        }
+        
+        // Update vehicles
+        for (Vehicle vehicle : vehicles) {
+            // Check if vehicle is at a traffic light
+            boolean atTrafficLight = false;
+            for (TrafficLight light : trafficLights) {
+                if (Math.abs(vehicle.getX() - light.getX()) <= 1 && 
+                    Math.abs(vehicle.getY() - light.getY()) <= 1) {
+                    if (light.shouldStop()) {
+                        vehicle.stop();
+                        atTrafficLight = true;
+                    } else {
+                        vehicle.resume();
+                    }
+                    break;
+                }
+            }
+            
+            if (!atTrafficLight && vehicle.isStopped()) {
+                vehicle.resume();
+            }
+            
+            vehicle.move();
+        }
     }
     
     public boolean saveToFile(String filename) {

@@ -51,6 +51,7 @@ public class ToolboxPanel extends JPanel {
         addSectionLabel("Roads");
         addBuildingButton("Road", BuildingType.ROAD);
         addBuildingButton("Roundabout", BuildingType.ROUNDABOUT);
+        addBuildingButton("Traffic Light", BuildingType.TRAFFIC_LIGHT);
         add(Box.createRigidArea(new Dimension(0, 10)));
         
         // Residential buildings section
@@ -65,13 +66,24 @@ public class ToolboxPanel extends JPanel {
         addBuildingButton("Fire Station", BuildingType.FIRE_STATION);
         addBuildingButton("School", BuildingType.SCHOOL);
         addBuildingButton("Hospital", BuildingType.HOSPITAL);
+        addBuildingButton("Library", BuildingType.LIBRARY);
         add(Box.createRigidArea(new Dimension(0, 10)));
         
-        // Commercial/Industrial section
-        addSectionLabel("Commercial/Industrial");
+        // Commercial section
+        addSectionLabel("Commercial");
         addBuildingButton("Shop", BuildingType.SHOP);
+        addBuildingButton("Mall", BuildingType.MALL);
+        addBuildingButton("Restaurant", BuildingType.RESTAURANT);
+        addBuildingButton("Fast Food", BuildingType.FAST_FOOD);
+        addBuildingButton("Cinema", BuildingType.CINEMA);
+        addBuildingButton("Gym", BuildingType.GYM);
+        add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        // Industrial section
+        addSectionLabel("Industrial");
         addBuildingButton("Office", BuildingType.OFFICE);
         addBuildingButton("Factory", BuildingType.FACTORY);
+        addBuildingButton("Petrol Station", BuildingType.PETROL_STATION);
         add(Box.createRigidArea(new Dimension(0, 10)));
         
         // Government section

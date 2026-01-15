@@ -1,7 +1,7 @@
 package com.citybuilder.ui;
 
 import com.citybuilder.core.GameEngine;
-import com.citybuilder.model.GameState;
+import com.citybuilder.model.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,12 +44,75 @@ public class GameFrame extends JFrame {
         infoPanel = new InfoPanel(gameState);
         add(infoPanel, BorderLayout.NORTH);
         
-        // Start update timer
-        Timer timer = new Timer(100, e -> {
-            infoPanel.update();
+        // Start update timer (fast for game updates)
+        Timer fastTimer = new Timer(50, e -> {
+            gameState.updateTraffic();
             gamePanel.repaint();
         });
-        timer.start();
+        fastTimer.start();
+        
+        // Monthly update timer (3 seconds = 1 game month)
+        Timer monthlyTimer = new Timer(3000, e -> {
+            gameState.updateMonthly();
+            spawnVehicles();
+            updatePopulation();
+            infoPanel.update();
+        });
+        monthlyTimer.start();
+        
+        // UI update timer
+        Timer uiTimer = new Timer(100, e -> {
+            infoPanel.update();
+        });
+        uiTimer.start();
+    }
+    
+    private void spawnVehicles() {
+        // Spawn random vehicles on roads
+        CityMap map = gameState.getCityMap();
+        for (int i = 0; i < 3; i++) {
+            int x = (int) (Math.random() * map.getWidth());
+            int y = (int) (Math.random() * map.getHeight());
+            Tile tile = map.getTile(x, y);
+            if (tile != null && tile.getBuilding() != null && 
+                (tile.getBuilding().getType() == BuildingType.ROAD || 
+                 tile.getBuilding().getType() == BuildingType.ROUNDABOUT)) {
+                VehicleType type = VehicleType.values()[(int) (Math.random() * VehicleType.values().length)];
+                gameState.addVehicle(new Vehicle(x, y, type));
+            }
+        }
+        
+        // Remove vehicles that are far off map
+        gameState.getVehicles().removeIf(v -> 
+            v.getX() < -10 || v.getX() > map.getWidth() + 10 ||
+            v.getY() < -10 || v.getY() > map.getHeight() + 10
+        );
+    }
+    
+    private void updatePopulation() {
+        // Count residents from residential buildings
+        int totalCapacity = 0;
+        CityMap map = gameState.getCityMap();
+        for (int x = 0; x < map.getWidth(); x++) {
+            for (int y = 0; y < map.getHeight(); y++) {
+                Tile tile = map.getTile(x, y);
+                Building building = tile.getBuilding();
+                if (building != null) {
+                    totalCapacity += building.getType().getResidents();
+                    
+                    // Add residents to happy buildings
+                    if (tile.hasElectricity() && tile.hasWater()) {
+                        for (int i = 0; i < building.getType().getResidents() / 10; i++) {
+                            if (gameState.getPopulation() < totalCapacity) {
+                                Resident resident = new Resident(x, y);
+                                resident.adjustHappiness(10); // Happy with utilities
+                                gameState.addResident(resident);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private void initMenuBar() {
