@@ -15,6 +15,7 @@ import java.util.List;
 public class RadialMenu extends JPanel {
     private static final int MENU_RADIUS = 150;
     private static final int ICON_RADIUS = 100;
+    private static final int RESIDENT_SPAWN_DIVISOR = 10; // How many building capacity units per resident
     private boolean visible;
     private Point centerPoint;
     private List<RadialMenuItem> menuItems;

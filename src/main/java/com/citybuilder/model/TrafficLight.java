@@ -7,9 +7,9 @@ public class TrafficLight {
     private int x, y;
     private TrafficLightState state;
     private int timer;
-    private static final int GREEN_DURATION = 60; // frames
-    private static final int YELLOW_DURATION = 20;
-    private static final int RED_DURATION = 60;
+    private static final int GREEN_DURATION = 60; // frames (~3 seconds at 20 FPS)
+    private static final int YELLOW_DURATION = 20; // frames (~1 second at 20 FPS)
+    private static final int RED_DURATION = 60; // frames (~3 seconds at 20 FPS)
     
     public TrafficLight(int x, int y) {
         this.x = x;

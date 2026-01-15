@@ -11,6 +11,8 @@ import java.awt.event.*;
  * Main game rendering panel.
  */
 public class GamePanel extends JPanel {
+    private static final int RADIAL_MENU_SIZE = 2000; // Large enough for any screen
+    
     private GameState gameState;
     private Point dragStart;
     private BuildingType selectedBuilding;
@@ -24,7 +26,7 @@ public class GamePanel extends JPanel {
         
         setLayout(null); // Allow absolute positioning for radial menu
         add(radialMenu);
-        radialMenu.setBounds(0, 0, 2000, 2000);
+        radialMenu.setBounds(0, 0, RADIAL_MENU_SIZE, RADIAL_MENU_SIZE);
         
         setBackground(new Color(100, 150, 100));
         setFocusable(true);

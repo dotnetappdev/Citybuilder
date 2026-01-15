@@ -10,6 +10,9 @@ import java.awt.*;
  * Main game frame that contains the game view and UI.
  */
 public class GameFrame extends JFrame {
+    private static final int RESIDENT_SPAWN_DIVISOR = 10; // How many building capacity units per resident
+    private static final int VEHICLE_CLEANUP_MARGIN = 10; // Distance beyond map to remove vehicles
+    
     private GameEngine gameEngine;
     private GameState gameState;
     private GamePanel gamePanel;
@@ -47,6 +50,7 @@ public class GameFrame extends JFrame {
         // Start update timer (fast for game updates)
         Timer fastTimer = new Timer(50, e -> {
             gameState.updateTraffic();
+            cleanupVehicles(); // Clean up off-map vehicles frequently
             gamePanel.repaint();
         });
         fastTimer.start();
@@ -81,11 +85,14 @@ public class GameFrame extends JFrame {
                 gameState.addVehicle(new Vehicle(x, y, type));
             }
         }
-        
+    }
+    
+    private void cleanupVehicles() {
         // Remove vehicles that are far off map
+        CityMap map = gameState.getCityMap();
         gameState.getVehicles().removeIf(v -> 
-            v.getX() < -10 || v.getX() > map.getWidth() + 10 ||
-            v.getY() < -10 || v.getY() > map.getHeight() + 10
+            v.getX() < -VEHICLE_CLEANUP_MARGIN || v.getX() > map.getWidth() + VEHICLE_CLEANUP_MARGIN ||
+            v.getY() < -VEHICLE_CLEANUP_MARGIN || v.getY() > map.getHeight() + VEHICLE_CLEANUP_MARGIN
         );
     }
     
@@ -102,7 +109,7 @@ public class GameFrame extends JFrame {
                     
                     // Add residents to happy buildings
                     if (tile.hasElectricity() && tile.hasWater()) {
-                        for (int i = 0; i < building.getType().getResidents() / 10; i++) {
+                        for (int i = 0; i < building.getType().getResidents() / RESIDENT_SPAWN_DIVISOR; i++) {
                             if (gameState.getPopulation() < totalCapacity) {
                                 Resident resident = new Resident(x, y);
                                 resident.adjustHappiness(10); // Happy with utilities
