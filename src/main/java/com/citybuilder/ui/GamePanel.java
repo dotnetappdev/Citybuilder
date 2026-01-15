@@ -1,0 +1,536 @@
+package com.citybuilder.ui;
+
+import com.citybuilder.model.*;
+import com.citybuilder.util.IsometricUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+/**
+ * Main game rendering panel.
+ */
+public class GamePanel extends JPanel {
+    private static final int RADIAL_MENU_SIZE = 2000; // Large enough for any screen
+    
+    private GameState gameState;
+    private Point dragStart;
+    private BuildingType selectedBuilding;
+    private ToolMode toolMode;
+    private RadialMenu radialMenu;
+    
+    public GamePanel(GameState gameState) {
+        this.gameState = gameState;
+        this.toolMode = ToolMode.NONE;
+        this.radialMenu = new RadialMenu();
+        
+        setLayout(null); // Allow absolute positioning for radial menu
+        add(radialMenu);
+        radialMenu.setBounds(0, 0, RADIAL_MENU_SIZE, RADIAL_MENU_SIZE);
+        
+        setBackground(new Color(100, 150, 100));
+        setFocusable(true);
+        
+        // Setup radial menu listener
+        radialMenu.setListener(item -> {
+            Object data = item.getData();
+            if (data instanceof ToolMode) {
+                setToolMode((ToolMode) data);
+            } else if (data instanceof BuildingType) {
+                setSelectedBuilding((BuildingType) data);
+            }
+        });
+        
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    // Show radial menu on right-click
+                    radialMenu.show(e.getPoint());
+                    repaint();
+                } else if (SwingUtilities.isMiddleMouseButton(e) || 
+                    (SwingUtilities.isLeftMouseButton(e) && e.isControlDown())) {
+                    dragStart = e.getPoint();
+                } else if (SwingUtilities.isLeftMouseButton(e)) {
+                    if (!radialMenu.isVisible()) {
+                        handleClick(e.getX(), e.getY());
+                    }
+                }
+            }
+            
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                dragStart = null;
+            }
+        });
+        
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (dragStart != null) {
+                    int dx = e.getX() - dragStart.x;
+                    int dy = e.getY() - dragStart.y;
+                    gameState.getCamera().move(dx, dy);
+                    dragStart = e.getPoint();
+                    repaint();
+                }
+            }
+        });
+        
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_Q:
+                        gameState.getCamera().rotateCounterClockwise();
+                        repaint();
+                        break;
+                    case KeyEvent.VK_E:
+                        gameState.getCamera().rotateClockwise();
+                        repaint();
+                        break;
+                    case KeyEvent.VK_W:
+                        gameState.getCamera().move(0, 20);
+                        repaint();
+                        break;
+                    case KeyEvent.VK_S:
+                        gameState.getCamera().move(0, -20);
+                        repaint();
+                        break;
+                    case KeyEvent.VK_A:
+                        gameState.getCamera().move(20, 0);
+                        repaint();
+                        break;
+                    case KeyEvent.VK_D:
+                        gameState.getCamera().move(-20, 0);
+                        repaint();
+                        break;
+                }
+            }
+        });
+    }
+    
+    private void handleClick(int mouseX, int mouseY) {
+        Point gridPos = screenToGrid(mouseX, mouseY);
+        
+        if (gameState.getCityMap().isValidPosition(gridPos.x, gridPos.y)) {
+            Tile tile = gameState.getCityMap().getTile(gridPos.x, gridPos.y);
+            
+            switch (toolMode) {
+                case BUILD:
+                    if (selectedBuilding != null && tile.isEmpty()) {
+                        if (gameState.spendMoney(selectedBuilding.getCost())) {
+                            tile.setBuilding(new Building(selectedBuilding));
+                            
+                            // If it's a traffic light, also add to traffic light list
+                            if (selectedBuilding == BuildingType.TRAFFIC_LIGHT) {
+                                gameState.addTrafficLight(new TrafficLight(gridPos.x, gridPos.y));
+                            }
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Not enough money!");
+                        }
+                    }
+                    break;
+                    
+                case DEMOLISH:
+                    tile.demolish();
+                    break;
+                    
+                case ZONE_RESIDENTIAL:
+                    if (tile.isEmpty()) {
+                        tile.setZoneType(ZoneType.RESIDENTIAL);
+                    }
+                    break;
+                    
+                case ZONE_COMMERCIAL:
+                    if (tile.isEmpty()) {
+                        tile.setZoneType(ZoneType.COMMERCIAL);
+                    }
+                    break;
+                    
+                case ZONE_INDUSTRIAL:
+                    if (tile.isEmpty()) {
+                        tile.setZoneType(ZoneType.INDUSTRIAL);
+                    }
+                    break;
+                    
+                case RAISE_TERRAIN:
+                    tile.raiseHeight();
+                    break;
+                    
+                case LOWER_TERRAIN:
+                    tile.lowerHeight();
+                    break;
+                    
+                case SET_TRAFFIC_DIRECTION:
+                    if (tile.isRoad()) {
+                        tile.cycleTrafficDirection();
+                    }
+                    break;
+            }
+            
+            repaint();
+        }
+    }
+    
+    private Point screenToGrid(int screenX, int screenY) {
+        Camera camera = gameState.getCamera();
+        
+        // Adjust for camera offset
+        int adjustedX = screenX - camera.getOffsetX();
+        int adjustedY = screenY - camera.getOffsetY();
+        
+        // Convert to grid coordinates
+        Point gridPos = IsometricUtils.screenToGrid(adjustedX, adjustedY);
+        
+        // Apply reverse rotation
+        CityMap map = gameState.getCityMap();
+        int rotation = (4 - camera.getRotation()) % 4;
+        
+        int x = gridPos.x;
+        int y = gridPos.y;
+        
+        switch (rotation) {
+            case 1:
+                gridPos.x = y;
+                gridPos.y = map.getWidth() - 1 - x;
+                break;
+            case 2:
+                gridPos.x = map.getWidth() - 1 - x;
+                gridPos.y = map.getHeight() - 1 - y;
+                break;
+            case 3:
+                gridPos.x = map.getHeight() - 1 - y;
+                gridPos.y = x;
+                break;
+        }
+        
+        return gridPos;
+    }
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        Camera camera = gameState.getCamera();
+        CityMap map = gameState.getCityMap();
+        
+        // Render tiles
+        for (int x = 0; x < map.getWidth(); x++) {
+            for (int y = 0; y < map.getHeight(); y++) {
+                Tile tile = map.getTile(x, y);
+                renderTile(g2d, tile, x, y);
+            }
+        }
+        
+        // Render vehicles
+        for (Vehicle vehicle : gameState.getVehicles()) {
+            renderVehicle(g2d, vehicle);
+        }
+        
+        // Render traffic lights
+        for (TrafficLight light : gameState.getTrafficLights()) {
+            renderTrafficLight(g2d, light);
+        }
+        
+        // Apply day/night overlay
+        TimeOfDay timeOfDay = gameState.getCurrentTimeOfDay();
+        float brightness = timeOfDay.getBrightness();
+        if (brightness < 1.0f) {
+            int alpha = (int) ((1.0f - brightness) * 128);
+            g2d.setColor(new Color(0, 0, 30, alpha));
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+        }
+    }
+    
+    private void renderTile(Graphics2D g2d, Tile tile, int gridX, int gridY) {
+        Camera camera = gameState.getCamera();
+        CityMap map = gameState.getCityMap();
+        
+        // Apply rotation
+        Point rotated = camera.applyRotation(gridX, gridY, map.getWidth(), map.getHeight());
+        
+        // Convert to screen coordinates
+        Point screen = IsometricUtils.gridToScreen(rotated.x, rotated.y, tile.getHeight());
+        
+        // Apply camera offset
+        int screenX = screen.x + camera.getOffsetX();
+        int screenY = screen.y + camera.getOffsetY();
+        
+        // Draw tile
+        int tileWidth = IsometricUtils.getTileWidth();
+        int tileHeight = IsometricUtils.getTileHeight();
+        
+        // Create isometric diamond shape
+        int[] xPoints = {
+            screenX, 
+            screenX + tileWidth / 2, 
+            screenX, 
+            screenX - tileWidth / 2
+        };
+        int[] yPoints = {
+            screenY - tileHeight / 2, 
+            screenY, 
+            screenY + tileHeight / 2, 
+            screenY
+        };
+        
+        // Determine tile color
+        Color tileColor = getTileColor(tile);
+        g2d.setColor(tileColor);
+        g2d.fillPolygon(xPoints, yPoints, 4);
+        
+        // Draw tile border
+        g2d.setColor(Color.BLACK);
+        g2d.drawPolygon(xPoints, yPoints, 4);
+        
+        // Draw zone overlay
+        if (tile.getZoneType() != ZoneType.NONE) {
+            Color zoneColor = getZoneColor(tile.getZoneType());
+            g2d.setColor(new Color(zoneColor.getRed(), zoneColor.getGreen(), zoneColor.getBlue(), 100));
+            g2d.fillPolygon(xPoints, yPoints, 4);
+        }
+        
+        // Draw building or natural feature
+        if (tile.getBuilding() != null) {
+            drawBuilding(g2d, tile.getBuilding(), screenX, screenY);
+            
+            // Draw traffic direction arrow on roads
+            if (tile.isRoad()) {
+                drawTrafficArrow(g2d, tile.getTrafficDirection(), screenX, screenY);
+            }
+        } else if (tile.getNaturalFeature() != null) {
+            drawNaturalFeature(g2d, tile.getNaturalFeature(), screenX, screenY);
+        }
+    }
+    
+    private Color getTileColor(Tile tile) {
+        switch (tile.getTerrainType()) {
+            case WATER:
+                return new Color(50, 100, 200);
+            case DIRT:
+                return new Color(139, 90, 43);
+            case SAND:
+                return new Color(238, 214, 175);
+            case GRASS:
+            default:
+                int heightShade = Math.max(0, Math.min(255, 120 + tile.getHeight() * 10));
+                return new Color(0, heightShade, 0);
+        }
+    }
+    
+    private Color getZoneColor(ZoneType zoneType) {
+        switch (zoneType) {
+            case RESIDENTIAL:
+                return Color.GREEN;
+            case COMMERCIAL:
+                return Color.BLUE;
+            case INDUSTRIAL:
+                return Color.YELLOW;
+            default:
+                return Color.WHITE;
+        }
+    }
+    
+    private void drawBuilding(Graphics2D g2d, Building building, int x, int y) {
+        Color buildingColor = getBuildingColor(building.getType());
+        g2d.setColor(buildingColor);
+        
+        int width = 30;
+        int height = 40;
+        
+        // Draw simple building representation
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+        
+        // Draw building name
+        g2d.setFont(new Font("Arial", Font.PLAIN, 8));
+        String shortName = getShortName(building.getType());
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(shortName);
+        g2d.drawString(shortName, x - textWidth / 2, y - height / 2);
+    }
+    
+    private Color getBuildingColor(BuildingType type) {
+        switch (type) {
+            case HOUSE:
+            case APARTMENT:
+                return new Color(200, 150, 100);
+            case POLICE_STATION:
+                return new Color(50, 50, 200);
+            case FIRE_STATION:
+                return new Color(200, 50, 50);
+            case SCHOOL:
+            case LIBRARY:
+                return new Color(200, 200, 50);
+            case HOSPITAL:
+                return new Color(200, 100, 100);
+            case FACTORY:
+                return new Color(100, 100, 100);
+            case OFFICE:
+                return new Color(150, 150, 200);
+            case SHOP:
+            case MALL:
+                return new Color(100, 200, 200);
+            case RESTAURANT:
+                return new Color(220, 120, 60);
+            case FAST_FOOD:
+                return new Color(255, 165, 0);
+            case PETROL_STATION:
+                return new Color(180, 180, 0);
+            case CINEMA:
+                return new Color(160, 82, 160);
+            case GYM:
+                return new Color(150, 200, 100);
+            case TOWN_HALL:
+                return new Color(180, 140, 100);
+            case POWER_PLANT:
+                return new Color(255, 200, 0);
+            case WATER_TOWER:
+                return new Color(100, 150, 255);
+            case ROAD:
+                return new Color(80, 80, 80);
+            case ROUNDABOUT:
+                return new Color(100, 100, 100);
+            case TRAFFIC_LIGHT:
+                return new Color(50, 50, 50);
+            case PARK:
+                return new Color(50, 150, 50);
+            case AIRPORT:
+                return new Color(120, 120, 180);
+            case RUNWAY:
+                return new Color(90, 90, 90);
+            case HANGAR:
+                return new Color(100, 100, 150);
+            case CONTROL_TOWER:
+                return new Color(140, 140, 200);
+            default:
+                return Color.GRAY;
+        }
+    }
+    
+    private String getShortName(BuildingType type) {
+        switch (type) {
+            case HOUSE: return "H";
+            case APARTMENT: return "APT";
+            case POLICE_STATION: return "POL";
+            case FIRE_STATION: return "FIRE";
+            case SCHOOL: return "SCH";
+            case HOSPITAL: return "HOSP";
+            case FACTORY: return "FAC";
+            case OFFICE: return "OFF";
+            case SHOP: return "SHOP";
+            case TOWN_HALL: return "HALL";
+            case POWER_PLANT: return "PWR";
+            case WATER_TOWER: return "H2O";
+            case ROAD: return "═";
+            case ROUNDABOUT: return "◯";
+            case PARK: return "PARK";
+            case RESTAURANT: return "REST";
+            case FAST_FOOD: return "FF";
+            case PETROL_STATION: return "GAS";
+            case TRAFFIC_LIGHT: return "⚡";
+            case MALL: return "MALL";
+            case CINEMA: return "CIN";
+            case GYM: return "GYM";
+            case LIBRARY: return "LIB";
+            case AIRPORT: return "AIR";
+            case RUNWAY: return "RWY";
+            case HANGAR: return "HGR";
+            case CONTROL_TOWER: return "TWR";
+            default: return "?";
+        }
+    }
+    
+    private void drawNaturalFeature(Graphics2D g2d, NaturalFeature feature, int x, int y) {
+        switch (feature) {
+            case TREE:
+                g2d.setColor(new Color(34, 139, 34));
+                g2d.fillOval(x - 8, y - 20, 16, 16);
+                g2d.setColor(new Color(101, 67, 33));
+                g2d.fillRect(x - 3, y - 10, 6, 10);
+                break;
+            case ROCK:
+                g2d.setColor(Color.GRAY);
+                g2d.fillOval(x - 6, y - 6, 12, 12);
+                break;
+            case BUSH:
+                g2d.setColor(new Color(0, 128, 0));
+                g2d.fillOval(x - 6, y - 6, 12, 12);
+                break;
+        }
+    }
+    
+    private void renderVehicle(Graphics2D g2d, Vehicle vehicle) {
+        Camera camera = gameState.getCamera();
+        CityMap map = gameState.getCityMap();
+        
+        // Apply rotation
+        Point rotated = camera.applyRotation(vehicle.getX(), vehicle.getY(), map.getWidth(), map.getHeight());
+        
+        // Convert to screen coordinates
+        Point screen = IsometricUtils.gridToScreen(rotated.x, rotated.y, 0);
+        
+        // Apply camera offset
+        int screenX = screen.x + camera.getOffsetX();
+        int screenY = screen.y + camera.getOffsetY();
+        
+        // Draw vehicle as a colored rectangle
+        g2d.setColor(vehicle.getType().getColor());
+        g2d.fillRect(screenX - 8, screenY - 4, 16, 8);
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(screenX - 8, screenY - 4, 16, 8);
+    }
+    
+    private void drawTrafficArrow(Graphics2D g2d, TrafficDirection direction, int x, int y) {
+        // Draw traffic direction arrow on the road
+        g2d.setColor(new Color(255, 255, 0, 200)); // Semi-transparent yellow
+        g2d.setFont(new Font("Arial", Font.BOLD, 20));
+        
+        String arrow = direction.getArrow();
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(arrow);
+        int textHeight = fm.getAscent();
+        
+        g2d.drawString(arrow, x - textWidth / 2, y + textHeight / 4);
+    }
+    
+    private void renderTrafficLight(Graphics2D g2d, TrafficLight light) {
+        Camera camera = gameState.getCamera();
+        CityMap map = gameState.getCityMap();
+        
+        // Apply rotation
+        Point rotated = camera.applyRotation(light.getX(), light.getY(), map.getWidth(), map.getHeight());
+        
+        // Convert to screen coordinates
+        Point screen = IsometricUtils.gridToScreen(rotated.x, rotated.y, 0);
+        
+        // Apply camera offset
+        int screenX = screen.x + camera.getOffsetX();
+        int screenY = screen.y + camera.getOffsetY() - 20;
+        
+        // Draw traffic light pole
+        g2d.setColor(Color.DARK_GRAY);
+        g2d.fillRect(screenX - 2, screenY, 4, 15);
+        
+        // Draw traffic light box
+        g2d.setColor(Color.BLACK);
+        g2d.fillRect(screenX - 6, screenY - 12, 12, 12);
+        
+        // Draw colored light
+        g2d.setColor(light.getState().getColor());
+        g2d.fillOval(screenX - 4, screenY - 10, 8, 8);
+    }
+    
+    public void setToolMode(ToolMode mode) {
+        this.toolMode = mode;
+    }
+    
+    public void setSelectedBuilding(BuildingType building) {
+        this.selectedBuilding = building;
+        this.toolMode = ToolMode.BUILD;
+    }
+}
