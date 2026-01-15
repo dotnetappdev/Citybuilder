@@ -13,6 +13,16 @@ import java.awt.event.*;
 public class GamePanel extends JPanel {
     private static final int RADIAL_MENU_SIZE = 2000; // Large enough for any screen
     
+    // Shadow and visual effect constants
+    private static final int SHADOW_OFFSET_X = 3;
+    private static final int SHADOW_OFFSET_Y = 3;
+    private static final int SHADOW_ALPHA = 50;
+    
+    // Star badge constants for police station
+    private static final int STAR_POINTS = 10;
+    private static final int STAR_OUTER_RADIUS = 8;
+    private static final int STAR_INNER_RADIUS = 4;
+    
     private GameState gameState;
     private Point dragStart;
     private BuildingType selectedBuilding;
@@ -462,8 +472,8 @@ public class GamePanel extends JPanel {
         int height = 50;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw main building with gradient effect
         GradientPaint gradient = new GradientPaint(
@@ -472,6 +482,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(gradient);
         g2d.fillRect(x - width / 2, y - height, width, height);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw cooling towers
         g2d.setColor(new Color(180, 180, 180));
@@ -501,8 +512,8 @@ public class GamePanel extends JPanel {
         int height = 55;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - baseWidth / 2 + 2, y - 5, baseWidth, 8);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - baseWidth / 2 + SHADOW_OFFSET_X - 1, y - 5, baseWidth, 8);
         
         // Draw support legs
         g2d.setColor(new Color(120, 120, 120));
@@ -516,6 +527,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(gradient);
         g2d.fillOval(x - 15, y - height, 30, 25);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw tank shine
         g2d.setColor(new Color(200, 220, 255, 150));
@@ -533,8 +545,8 @@ public class GamePanel extends JPanel {
         int height = 35;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 2, y - height / 2 + 2, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X - 1, y - height / 2 + SHADOW_OFFSET_Y - 1, width, height);
         
         // Draw walls with gradient
         GradientPaint wallGradient = new GradientPaint(
@@ -543,6 +555,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(wallGradient);
         g2d.fillRect(x - width / 2, y - height, width, height - 5);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw roof
         int[] roofX = {x - width / 2 - 2, x, x + width / 2 + 2};
@@ -574,8 +587,8 @@ public class GamePanel extends JPanel {
         int height = 55;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw building with gradient
         GradientPaint gradient = new GradientPaint(
@@ -584,6 +597,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(gradient);
         g2d.fillRect(x - width / 2, y - height, width, height);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw windows in a grid pattern
         g2d.setColor(new Color(200, 230, 255));
@@ -615,8 +629,8 @@ public class GamePanel extends JPanel {
         int height = 45;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw main building
         g2d.setColor(new Color(120, 120, 120));
@@ -660,8 +674,8 @@ public class GamePanel extends JPanel {
         int height = 60;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw building with glass effect
         GradientPaint gradient = new GradientPaint(
@@ -670,6 +684,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(gradient);
         g2d.fillRect(x - width / 2, y - height, width, height);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw glass windows grid
         g2d.setColor(new Color(150, 200, 255, 180));
@@ -697,8 +712,8 @@ public class GamePanel extends JPanel {
         int height = 42;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw building
         g2d.setColor(new Color(70, 90, 180));
@@ -712,15 +727,15 @@ public class GamePanel extends JPanel {
         
         // Draw badge/star symbol
         g2d.setColor(new Color(255, 215, 0));
-        int[] starX = new int[10];
-        int[] starY = new int[10];
-        for (int i = 0; i < 10; i++) {
-            double angle = Math.PI * 2 * i / 10 - Math.PI / 2;
-            double radius = (i % 2 == 0) ? 8 : 4;
+        int[] starX = new int[STAR_POINTS];
+        int[] starY = new int[STAR_POINTS];
+        for (int i = 0; i < STAR_POINTS; i++) {
+            double angle = Math.PI * 2 * i / STAR_POINTS - Math.PI / 2;
+            double radius = (i % 2 == 0) ? STAR_OUTER_RADIUS : STAR_INNER_RADIUS;
             starX[i] = x + (int)(Math.cos(angle) * radius);
             starY[i] = y - height / 2 + (int)(Math.sin(angle) * radius);
         }
-        g2d.fillPolygon(starX, starY, 10);
+        g2d.fillPolygon(starX, starY, STAR_POINTS);
         
         // Draw windows
         g2d.setColor(new Color(200, 220, 255));
@@ -740,8 +755,8 @@ public class GamePanel extends JPanel {
         int height = 42;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw building
         g2d.setColor(new Color(200, 60, 60));
@@ -782,8 +797,8 @@ public class GamePanel extends JPanel {
         int height = 48;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw building
         GradientPaint gradient = new GradientPaint(
@@ -792,6 +807,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(gradient);
         g2d.fillRect(x - width / 2, y - height, width, height);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw red cross
         g2d.setColor(new Color(220, 50, 50));
@@ -821,8 +837,8 @@ public class GamePanel extends JPanel {
         int height = 40;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw building
         Color mainColor = type == BuildingType.SCHOOL ? 
@@ -871,8 +887,8 @@ public class GamePanel extends JPanel {
         int height = type == BuildingType.MALL ? 38 : 32;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw building
         GradientPaint gradient = new GradientPaint(
@@ -881,6 +897,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(gradient);
         g2d.fillRect(x - width / 2, y - height, width, height);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw awning
         g2d.setColor(new Color(200, 100, 100));
@@ -913,8 +930,8 @@ public class GamePanel extends JPanel {
         int height = 36;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw building
         Color mainColor = type == BuildingType.FAST_FOOD ?
@@ -953,8 +970,8 @@ public class GamePanel extends JPanel {
         int height = 38;
         
         // Draw shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
-        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
+        g2d.fillRect(x - width / 2 + SHADOW_OFFSET_X, y - height + SHADOW_OFFSET_Y, width, height);
         
         // Draw building with gradient
         Color baseColor = getBuildingColor(type);
@@ -964,6 +981,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(gradient);
         g2d.fillRect(x - width / 2, y - height, width, height);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw windows
         g2d.setColor(new Color(200, 220, 255));
@@ -1138,7 +1156,7 @@ public class GamePanel extends JPanel {
         int screenY = screen.y + camera.getOffsetY();
         
         // Draw vehicle shadow
-        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.setColor(new Color(0, 0, 0, SHADOW_ALPHA));
         g2d.fillRect(screenX - 7, screenY - 2, 16, 8);
         
         // Draw vehicle body with gradient
@@ -1149,6 +1167,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(gradient);
         g2d.fillRect(screenX - 8, screenY - 4, 16, 8);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw windows
         g2d.setColor(new Color(150, 180, 220, 180));
@@ -1193,6 +1212,7 @@ public class GamePanel extends JPanel {
         );
         g2d.setPaint(poleGradient);
         g2d.fillRect(screenX - 2, screenY, 4, 15);
+        g2d.setPaint(null); // Reset paint after gradient
         
         // Draw traffic light box with metallic look
         g2d.setColor(new Color(40, 40, 40));
@@ -1206,13 +1226,23 @@ public class GamePanel extends JPanel {
         g2d.setColor(new Color(20, 80, 20));
         g2d.fillOval(screenX - 4, screenY - 4, 8, 5);
         
-        // Draw active light with glow
-        Color lightColor = light.getState().getColor();
-        int lightY = screenY - 16;
-        if (lightColor.getGreen() > 200) { // Green
-            lightY = screenY - 4;
-        } else if (lightColor.getGreen() > 150 && lightColor.getRed() > 150) { // Yellow
-            lightY = screenY - 10;
+        // Draw active light with glow based on traffic light state
+        TrafficLightState state = light.getState();
+        Color lightColor = state.getColor();
+        int lightY = screenY - 16; // Default to red
+        
+        // Determine position based on state instead of color thresholds
+        switch (state) {
+            case GREEN:
+                lightY = screenY - 4;
+                break;
+            case YELLOW:
+                lightY = screenY - 10;
+                break;
+            case RED:
+            default:
+                lightY = screenY - 16;
+                break;
         }
         
         // Draw glow effect
