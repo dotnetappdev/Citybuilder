@@ -309,49 +309,681 @@ public class GamePanel extends JPanel {
     private Color getTileColor(Tile tile) {
         switch (tile.getTerrainType()) {
             case WATER:
-                return new Color(50, 100, 200);
+                // More realistic water with depth variation
+                int waterShade = Math.max(40, Math.min(120, 70 + tile.getHeight() * 5));
+                return new Color(30, waterShade, waterShade + 80);
             case DIRT:
-                return new Color(139, 90, 43);
+                // Richer brown earth tone
+                return new Color(139, 100, 58);
             case SAND:
-                return new Color(238, 214, 175);
+                // Warmer sand color
+                return new Color(238, 224, 185);
             case GRASS:
             default:
-                int heightShade = Math.max(0, Math.min(255, 120 + tile.getHeight() * 10));
-                return new Color(0, heightShade, 0);
+                // More vibrant grass with height variation
+                int heightShade = Math.max(80, Math.min(180, 110 + tile.getHeight() * 8));
+                int baseGreen = Math.max(50, Math.min(220, 140 + tile.getHeight() * 6));
+                return new Color(heightShade / 2, baseGreen, heightShade / 3);
         }
     }
     
     private Color getZoneColor(ZoneType zoneType) {
         switch (zoneType) {
             case RESIDENTIAL:
-                return Color.GREEN;
+                // Brighter green for residential
+                return new Color(100, 255, 100);
             case COMMERCIAL:
-                return Color.BLUE;
+                // Brighter cyan/blue for commercial
+                return new Color(80, 180, 255);
             case INDUSTRIAL:
-                return Color.YELLOW;
+                // Warmer yellow for industrial
+                return new Color(255, 220, 80);
             default:
                 return Color.WHITE;
         }
     }
     
     private void drawBuilding(Graphics2D g2d, Building building, int x, int y) {
-        Color buildingColor = getBuildingColor(building.getType());
-        g2d.setColor(buildingColor);
+        BuildingType type = building.getType();
         
+        // Draw different building types with enhanced graphics
+        switch (type) {
+            case ROAD:
+                drawRoad(g2d, x, y);
+                break;
+            case ROUNDABOUT:
+                drawRoundabout(g2d, x, y);
+                break;
+            case PARK:
+                drawPark(g2d, x, y);
+                break;
+            case POWER_PLANT:
+                drawPowerPlant(g2d, x, y);
+                break;
+            case WATER_TOWER:
+                drawWaterTower(g2d, x, y);
+                break;
+            case HOUSE:
+                drawHouse(g2d, x, y);
+                break;
+            case APARTMENT:
+                drawApartment(g2d, x, y);
+                break;
+            case FACTORY:
+                drawFactory(g2d, x, y);
+                break;
+            case OFFICE:
+                drawOfficeBuilding(g2d, x, y);
+                break;
+            case POLICE_STATION:
+                drawPoliceStation(g2d, x, y);
+                break;
+            case FIRE_STATION:
+                drawFireStation(g2d, x, y);
+                break;
+            case HOSPITAL:
+                drawHospital(g2d, x, y);
+                break;
+            case SCHOOL:
+            case LIBRARY:
+                drawSchoolOrLibrary(g2d, x, y, type);
+                break;
+            case SHOP:
+            case MALL:
+                drawShopOrMall(g2d, x, y, type);
+                break;
+            case RESTAURANT:
+            case FAST_FOOD:
+                drawRestaurant(g2d, x, y, type);
+                break;
+            default:
+                drawGenericBuilding(g2d, x, y, type);
+                break;
+        }
+    }
+    
+    // Enhanced building drawing methods with 3D effects and details
+    
+    private void drawRoad(Graphics2D g2d, int x, int y) {
+        int width = 32;
+        int height = 16;
+        
+        // Draw road base with darker asphalt color
+        g2d.setColor(new Color(60, 60, 60));
+        g2d.fillRect(x - width / 2, y - height / 2, width, height);
+        
+        // Draw road markings (yellow dashed line)
+        g2d.setColor(new Color(220, 200, 50));
+        for (int i = 0; i < 3; i++) {
+            g2d.fillRect(x - 6 + i * 6, y - 1, 4, 2);
+        }
+        
+        // Draw road edges
+        g2d.setColor(new Color(40, 40, 40));
+        g2d.drawRect(x - width / 2, y - height / 2, width, height);
+    }
+    
+    private void drawRoundabout(Graphics2D g2d, int x, int y) {
+        // Draw circular road
+        g2d.setColor(new Color(60, 60, 60));
+        g2d.fillOval(x - 20, y - 20, 40, 40);
+        
+        // Draw center island
+        g2d.setColor(new Color(50, 150, 50));
+        g2d.fillOval(x - 12, y - 12, 24, 24);
+        
+        // Draw edge
+        g2d.setColor(new Color(40, 40, 40));
+        g2d.drawOval(x - 20, y - 20, 40, 40);
+        g2d.drawOval(x - 12, y - 12, 24, 24);
+    }
+    
+    private void drawPark(Graphics2D g2d, int x, int y) {
         int width = 30;
-        int height = 40;
+        int height = 30;
         
-        // Draw simple building representation
+        // Draw grass area
+        g2d.setColor(new Color(60, 180, 80));
         g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw trees
+        g2d.setColor(new Color(40, 140, 40));
+        g2d.fillOval(x - 12, y - height + 5, 8, 8);
+        g2d.fillOval(x + 4, y - height + 5, 8, 8);
+        g2d.fillOval(x - 4, y - height + 15, 8, 8);
+        
+        // Draw bench
+        g2d.setColor(new Color(139, 90, 43));
+        g2d.fillRect(x - 6, y - 10, 12, 4);
+    }
+    
+    private void drawPowerPlant(Graphics2D g2d, int x, int y) {
+        int width = 40;
+        int height = 50;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw main building with gradient effect
+        GradientPaint gradient = new GradientPaint(
+            x - width / 2, y - height, new Color(255, 220, 100),
+            x + width / 2, y, new Color(200, 160, 50)
+        );
+        g2d.setPaint(gradient);
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw cooling towers
+        g2d.setColor(new Color(180, 180, 180));
+        g2d.fillArc(x - 20, y - height - 15, 12, 20, 0, 180);
+        g2d.fillArc(x + 8, y - height - 15, 12, 20, 0, 180);
+        
+        // Draw steam
+        g2d.setColor(new Color(240, 240, 240, 150));
+        g2d.fillOval(x - 18, y - height - 25, 8, 8);
+        g2d.fillOval(x + 10, y - height - 25, 8, 8);
+        
+        // Draw windows
+        g2d.setColor(new Color(100, 150, 200));
+        for (int row = 0; row < 4; row++) {
+            for (int col = 0; col < 3; col++) {
+                g2d.fillRect(x - 12 + col * 8, y - height + 10 + row * 8, 4, 6);
+            }
+        }
+        
+        // Draw outline
         g2d.setColor(Color.BLACK);
         g2d.drawRect(x - width / 2, y - height, width, height);
+    }
+    
+    private void drawWaterTower(Graphics2D g2d, int x, int y) {
+        int baseWidth = 20;
+        int height = 55;
         
-        // Draw building name
-        g2d.setFont(new Font("Arial", Font.PLAIN, 8));
-        String shortName = getShortName(building.getType());
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - baseWidth / 2 + 2, y - 5, baseWidth, 8);
+        
+        // Draw support legs
+        g2d.setColor(new Color(120, 120, 120));
+        g2d.fillRect(x - 12, y - 30, 3, 30);
+        g2d.fillRect(x + 9, y - 30, 3, 30);
+        
+        // Draw water tank with metallic gradient
+        GradientPaint gradient = new GradientPaint(
+            x - 15, y - height, new Color(150, 180, 255),
+            x + 15, y - 30, new Color(80, 110, 180)
+        );
+        g2d.setPaint(gradient);
+        g2d.fillOval(x - 15, y - height, 30, 25);
+        
+        // Draw tank shine
+        g2d.setColor(new Color(200, 220, 255, 150));
+        g2d.fillOval(x - 10, y - height + 3, 12, 8);
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawOval(x - 15, y - height, 30, 25);
+        g2d.drawLine(x - 12, y - 30, x - 12, y);
+        g2d.drawLine(x + 12, y - 30, x + 12, y);
+    }
+    
+    private void drawHouse(Graphics2D g2d, int x, int y) {
+        int width = 28;
+        int height = 35;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 2, y - height / 2 + 2, width, height);
+        
+        // Draw walls with gradient
+        GradientPaint wallGradient = new GradientPaint(
+            x - width / 2, y - height, new Color(220, 170, 120),
+            x + width / 2, y, new Color(180, 130, 80)
+        );
+        g2d.setPaint(wallGradient);
+        g2d.fillRect(x - width / 2, y - height, width, height - 5);
+        
+        // Draw roof
+        int[] roofX = {x - width / 2 - 2, x, x + width / 2 + 2};
+        int[] roofY = {y - height, y - height - 12, y - height};
+        g2d.setColor(new Color(150, 50, 50));
+        g2d.fillPolygon(roofX, roofY, 3);
+        
+        // Draw roof highlight
+        g2d.setColor(new Color(180, 70, 70));
+        g2d.drawLine(x - width / 2 - 2, y - height, x, y - height - 12);
+        
+        // Draw windows
+        g2d.setColor(new Color(200, 230, 255));
+        g2d.fillRect(x - 10, y - height + 8, 6, 6);
+        g2d.fillRect(x + 4, y - height + 8, 6, 6);
+        
+        // Draw door
+        g2d.setColor(new Color(100, 60, 20));
+        g2d.fillRect(x - 4, y - height + 18, 8, 12);
+        
+        // Draw outlines
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height - 5);
+        g2d.drawPolygon(roofX, roofY, 3);
+    }
+    
+    private void drawApartment(Graphics2D g2d, int x, int y) {
+        int width = 35;
+        int height = 55;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw building with gradient
+        GradientPaint gradient = new GradientPaint(
+            x - width / 2, y - height, new Color(200, 150, 120),
+            x + width / 2, y, new Color(150, 100, 70)
+        );
+        g2d.setPaint(gradient);
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw windows in a grid pattern
+        g2d.setColor(new Color(200, 230, 255));
+        for (int floor = 0; floor < 5; floor++) {
+            for (int col = 0; col < 3; col++) {
+                int wx = x - 12 + col * 10;
+                int wy = y - height + 5 + floor * 10;
+                g2d.fillRect(wx, wy, 6, 7);
+                g2d.setColor(new Color(100, 120, 140));
+                g2d.drawRect(wx, wy, 6, 7);
+                g2d.drawLine(wx + 3, wy, wx + 3, wy + 7);
+                g2d.setColor(new Color(200, 230, 255));
+            }
+        }
+        
+        // Draw balconies
+        g2d.setColor(new Color(120, 90, 60));
+        for (int floor = 1; floor < 5; floor++) {
+            g2d.fillRect(x - width / 2 - 2, y - height + floor * 10 + 10, 4, 8);
+        }
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+    }
+    
+    private void drawFactory(Graphics2D g2d, int x, int y) {
+        int width = 40;
+        int height = 45;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw main building
+        g2d.setColor(new Color(120, 120, 120));
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw darker side for 3D effect
+        g2d.setColor(new Color(80, 80, 80));
+        g2d.fillRect(x - width / 2, y - height, width / 3, height);
+        
+        // Draw smokestacks
+        g2d.setColor(new Color(100, 100, 100));
+        g2d.fillRect(x - 15, y - height - 20, 6, 20);
+        g2d.fillRect(x + 9, y - height - 20, 6, 20);
+        
+        // Draw smoke
+        g2d.setColor(new Color(150, 150, 150, 120));
+        g2d.fillOval(x - 17, y - height - 30, 10, 10);
+        g2d.fillOval(x + 7, y - height - 30, 10, 10);
+        g2d.fillOval(x - 15, y - height - 38, 8, 8);
+        g2d.fillOval(x + 9, y - height - 38, 8, 8);
+        
+        // Draw loading bay
+        g2d.setColor(new Color(60, 60, 60));
+        g2d.fillRect(x - 8, y - 15, 16, 15);
+        
+        // Draw windows
+        g2d.setColor(new Color(255, 200, 100, 180));
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 2; col++) {
+                g2d.fillRect(x + 4 + col * 8, y - height + 10 + row * 12, 5, 8);
+            }
+        }
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+    }
+    
+    private void drawOfficeBuilding(Graphics2D g2d, int x, int y) {
+        int width = 35;
+        int height = 60;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw building with glass effect
+        GradientPaint gradient = new GradientPaint(
+            x - width / 2, y - height, new Color(180, 200, 230),
+            x + width / 2, y, new Color(120, 140, 170)
+        );
+        g2d.setPaint(gradient);
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw glass windows grid
+        g2d.setColor(new Color(150, 200, 255, 180));
+        for (int floor = 0; floor < 7; floor++) {
+            for (int col = 0; col < 4; col++) {
+                int wx = x - 14 + col * 7;
+                int wy = y - height + 3 + floor * 8;
+                g2d.fillRect(wx, wy, 5, 6);
+            }
+        }
+        
+        // Draw window frames
+        g2d.setColor(new Color(80, 100, 120));
+        for (int floor = 0; floor <= 7; floor++) {
+            g2d.drawLine(x - width / 2, y - height + floor * 8, x + width / 2, y - height + floor * 8);
+        }
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+    }
+    
+    private void drawPoliceStation(Graphics2D g2d, int x, int y) {
+        int width = 38;
+        int height = 42;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw building
+        g2d.setColor(new Color(70, 90, 180));
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw roof light
+        g2d.setColor(new Color(255, 0, 0));
+        g2d.fillOval(x - 6, y - height - 8, 12, 8);
+        g2d.setColor(new Color(255, 100, 100, 150));
+        g2d.fillOval(x - 8, y - height - 10, 16, 10);
+        
+        // Draw badge/star symbol
+        g2d.setColor(new Color(255, 215, 0));
+        int[] starX = new int[10];
+        int[] starY = new int[10];
+        for (int i = 0; i < 10; i++) {
+            double angle = Math.PI * 2 * i / 10 - Math.PI / 2;
+            double radius = (i % 2 == 0) ? 8 : 4;
+            starX[i] = x + (int)(Math.cos(angle) * radius);
+            starY[i] = y - height / 2 + (int)(Math.sin(angle) * radius);
+        }
+        g2d.fillPolygon(starX, starY, 10);
+        
+        // Draw windows
+        g2d.setColor(new Color(200, 220, 255));
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 2; j++) {
+                g2d.fillRect(x - 12 + j * 14, y - height + 18 + i * 8, 8, 6);
+            }
+        }
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+    }
+    
+    private void drawFireStation(Graphics2D g2d, int x, int y) {
+        int width = 38;
+        int height = 42;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw building
+        g2d.setColor(new Color(200, 60, 60));
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw garage doors
+        g2d.setColor(new Color(150, 150, 150));
+        g2d.fillRect(x - 14, y - 18, 12, 18);
+        g2d.fillRect(x + 2, y - 18, 12, 18);
+        
+        // Draw door panels
+        g2d.setColor(new Color(120, 120, 120));
+        for (int i = 0; i < 4; i++) {
+            g2d.drawLine(x - 14, y - 18 + i * 4, x - 2, y - 18 + i * 4);
+            g2d.drawLine(x + 2, y - 18 + i * 4, x + 14, y - 18 + i * 4);
+        }
+        
+        // Draw alarm bell
+        g2d.setColor(new Color(180, 150, 50));
+        g2d.fillArc(x - 6, y - height - 6, 12, 8, 0, 180);
+        
+        // Draw tower
+        g2d.setColor(new Color(170, 50, 50));
+        g2d.fillRect(x - 8, y - height - 18, 16, 12);
+        
+        // Draw windows on tower
+        g2d.setColor(new Color(255, 255, 200));
+        g2d.fillRect(x - 5, y - height - 14, 4, 4);
+        g2d.fillRect(x + 1, y - height - 14, 4, 4);
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+    }
+    
+    private void drawHospital(Graphics2D g2d, int x, int y) {
+        int width = 40;
+        int height = 48;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw building
+        GradientPaint gradient = new GradientPaint(
+            x - width / 2, y - height, new Color(255, 255, 255),
+            x + width / 2, y, new Color(220, 220, 220)
+        );
+        g2d.setPaint(gradient);
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw red cross
+        g2d.setColor(new Color(220, 50, 50));
+        g2d.fillRect(x - 10, y - height / 2 - 2, 20, 6);
+        g2d.fillRect(x - 3, y - height / 2 - 9, 6, 20);
+        
+        // Draw windows
+        g2d.setColor(new Color(180, 220, 255));
+        for (int floor = 0; floor < 4; floor++) {
+            for (int col = 0; col < 3; col++) {
+                if (floor == 1 && col == 1) continue; // Skip center for cross
+                g2d.fillRect(x - 15 + col * 10, y - height + 8 + floor * 10, 6, 7);
+            }
+        }
+        
+        // Draw entrance
+        g2d.setColor(new Color(100, 100, 100));
+        g2d.fillRect(x - 8, y - 12, 16, 12);
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+    }
+    
+    private void drawSchoolOrLibrary(Graphics2D g2d, int x, int y, BuildingType type) {
+        int width = 38;
+        int height = 40;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw building
+        Color mainColor = type == BuildingType.SCHOOL ? 
+            new Color(220, 200, 100) : new Color(190, 160, 120);
+        g2d.setColor(mainColor);
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw entrance columns
+        g2d.setColor(new Color(240, 240, 240));
+        g2d.fillRect(x - 15, y - 20, 4, 20);
+        g2d.fillRect(x + 11, y - 20, 4, 20);
+        
+        // Draw triangular pediment
+        int[] pedX = {x - 20, x, x + 20};
+        int[] pedY = {y - height, y - height - 10, y - height};
+        g2d.fillPolygon(pedX, pedY, 3);
+        
+        // Draw windows
+        g2d.setColor(new Color(150, 180, 220));
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 2; j++) {
+                g2d.fillRect(x - 12 + i * 8, y - height + 15 + j * 10, 6, 7);
+            }
+        }
+        
+        // Draw door
+        g2d.setColor(new Color(100, 70, 40));
+        g2d.fillRect(x - 6, y - 15, 12, 15);
+        
+        // Draw symbol (book or apple)
+        if (type == BuildingType.LIBRARY) {
+            g2d.setColor(new Color(100, 50, 50));
+            g2d.fillRect(x - 4, y - height / 2 - 4, 8, 10);
+            g2d.setColor(Color.WHITE);
+            g2d.drawLine(x - 2, y - height / 2 - 2, x - 2, y - height / 2 + 4);
+        }
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+        g2d.drawPolygon(pedX, pedY, 3);
+    }
+    
+    private void drawShopOrMall(Graphics2D g2d, int x, int y, BuildingType type) {
+        int width = type == BuildingType.MALL ? 45 : 32;
+        int height = type == BuildingType.MALL ? 38 : 32;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw building
+        GradientPaint gradient = new GradientPaint(
+            x - width / 2, y - height, new Color(120, 220, 230),
+            x + width / 2, y, new Color(80, 180, 190)
+        );
+        g2d.setPaint(gradient);
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw awning
+        g2d.setColor(new Color(200, 100, 100));
+        g2d.fillRect(x - width / 2, y - height, width, 6);
+        
+        // Draw windows/display
+        g2d.setColor(new Color(200, 230, 255, 200));
+        if (type == BuildingType.MALL) {
+            g2d.fillRect(x - width / 2 + 4, y - height + 10, width - 8, height - 20);
+        } else {
+            g2d.fillRect(x - width / 2 + 4, y - height + 10, width - 8, height - 18);
+        }
+        
+        // Draw door
+        g2d.setColor(new Color(80, 80, 80));
+        g2d.fillRect(x - 6, y - 12, 12, 12);
+        
+        // Draw $ sign for shop
+        g2d.setColor(new Color(255, 215, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, 16));
+        g2d.drawString("$", x - 4, y - height + 22);
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+    }
+    
+    private void drawRestaurant(Graphics2D g2d, int x, int y, BuildingType type) {
+        int width = 34;
+        int height = 36;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw building
+        Color mainColor = type == BuildingType.FAST_FOOD ?
+            new Color(255, 180, 80) : new Color(220, 140, 80);
+        g2d.setColor(mainColor);
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw roof/sign
+        g2d.setColor(new Color(200, 50, 50));
+        g2d.fillRect(x - width / 2 - 2, y - height - 8, width + 4, 8);
+        
+        // Draw text on sign
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.BOLD, 8));
+        String text = type == BuildingType.FAST_FOOD ? "FF" : "REST";
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+        g2d.drawString(text, x - textWidth / 2, y - height - 2);
+        
+        // Draw windows
+        g2d.setColor(new Color(255, 255, 200));
+        g2d.fillRect(x - 12, y - height + 8, 8, 10);
+        g2d.fillRect(x + 4, y - height + 8, 8, 10);
+        
+        // Draw door
+        g2d.setColor(new Color(100, 60, 30));
+        g2d.fillRect(x - 5, y - 14, 10, 14);
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
+    }
+    
+    private void drawGenericBuilding(Graphics2D g2d, int x, int y, BuildingType type) {
+        int width = 32;
+        int height = 38;
+        
+        // Draw shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(x - width / 2 + 3, y - height + 3, width, height);
+        
+        // Draw building with gradient
+        Color baseColor = getBuildingColor(type);
+        GradientPaint gradient = new GradientPaint(
+            x - width / 2, y - height, baseColor,
+            x + width / 2, y, baseColor.darker()
+        );
+        g2d.setPaint(gradient);
+        g2d.fillRect(x - width / 2, y - height, width, height);
+        
+        // Draw windows
+        g2d.setColor(new Color(200, 220, 255));
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 2; col++) {
+                g2d.fillRect(x - 10 + col * 12, y - height + 8 + row * 10, 6, 7);
+            }
+        }
+        
+        // Draw label
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.BOLD, 9));
+        String shortName = getShortName(type);
         FontMetrics fm = g2d.getFontMetrics();
         int textWidth = fm.stringWidth(shortName);
         g2d.drawString(shortName, x - textWidth / 2, y - height / 2);
+        
+        // Draw outline
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(x - width / 2, y - height, width, height);
     }
     
     private Color getBuildingColor(BuildingType type) {
@@ -448,18 +1080,45 @@ public class GamePanel extends JPanel {
     private void drawNaturalFeature(Graphics2D g2d, NaturalFeature feature, int x, int y) {
         switch (feature) {
             case TREE:
-                g2d.setColor(new Color(34, 139, 34));
-                g2d.fillOval(x - 8, y - 20, 16, 16);
+                // Draw tree trunk with gradient
                 g2d.setColor(new Color(101, 67, 33));
-                g2d.fillRect(x - 3, y - 10, 6, 10);
+                g2d.fillRect(x - 3, y - 10, 6, 12);
+                
+                // Draw tree foliage with multiple shades for depth
+                g2d.setColor(new Color(34, 120, 34));
+                g2d.fillOval(x - 10, y - 24, 20, 18);
+                g2d.setColor(new Color(50, 160, 50));
+                g2d.fillOval(x - 8, y - 22, 16, 14);
+                g2d.setColor(new Color(70, 180, 70));
+                g2d.fillOval(x - 6, y - 20, 12, 10);
+                
+                // Add highlight
+                g2d.setColor(new Color(100, 220, 100, 150));
+                g2d.fillOval(x - 4, y - 22, 6, 6);
                 break;
+                
             case ROCK:
-                g2d.setColor(Color.GRAY);
-                g2d.fillOval(x - 6, y - 6, 12, 12);
+                // Draw rock with 3D effect
+                g2d.setColor(new Color(100, 100, 100));
+                g2d.fillOval(x - 8, y - 8, 16, 16);
+                g2d.setColor(new Color(140, 140, 140));
+                g2d.fillOval(x - 7, y - 7, 10, 10);
+                g2d.setColor(new Color(180, 180, 180));
+                g2d.fillOval(x - 5, y - 6, 5, 5);
+                
+                // Add outline
+                g2d.setColor(new Color(70, 70, 70));
+                g2d.drawOval(x - 8, y - 8, 16, 16);
                 break;
+                
             case BUSH:
-                g2d.setColor(new Color(0, 128, 0));
+                // Draw bush with multiple layers
+                g2d.setColor(new Color(40, 140, 40));
+                g2d.fillOval(x - 8, y - 8, 16, 16);
+                g2d.setColor(new Color(50, 160, 50));
                 g2d.fillOval(x - 6, y - 6, 12, 12);
+                g2d.setColor(new Color(60, 180, 60));
+                g2d.fillOval(x - 4, y - 4, 8, 8);
                 break;
         }
     }
@@ -478,9 +1137,24 @@ public class GamePanel extends JPanel {
         int screenX = screen.x + camera.getOffsetX();
         int screenY = screen.y + camera.getOffsetY();
         
-        // Draw vehicle as a colored rectangle
-        g2d.setColor(vehicle.getType().getColor());
+        // Draw vehicle shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRect(screenX - 7, screenY - 2, 16, 8);
+        
+        // Draw vehicle body with gradient
+        Color vehicleColor = vehicle.getType().getColor();
+        GradientPaint gradient = new GradientPaint(
+            screenX - 8, screenY - 4, vehicleColor,
+            screenX + 8, screenY + 4, vehicleColor.darker()
+        );
+        g2d.setPaint(gradient);
         g2d.fillRect(screenX - 8, screenY - 4, 16, 8);
+        
+        // Draw windows
+        g2d.setColor(new Color(150, 180, 220, 180));
+        g2d.fillRect(screenX - 4, screenY - 2, 8, 4);
+        
+        // Draw outline
         g2d.setColor(Color.BLACK);
         g2d.drawRect(screenX - 8, screenY - 4, 16, 8);
     }
@@ -512,17 +1186,46 @@ public class GamePanel extends JPanel {
         int screenX = screen.x + camera.getOffsetX();
         int screenY = screen.y + camera.getOffsetY() - 20;
         
-        // Draw traffic light pole
-        g2d.setColor(Color.DARK_GRAY);
+        // Draw traffic light pole with gradient
+        GradientPaint poleGradient = new GradientPaint(
+            screenX - 2, screenY, new Color(80, 80, 80),
+            screenX + 2, screenY + 15, new Color(50, 50, 50)
+        );
+        g2d.setPaint(poleGradient);
         g2d.fillRect(screenX - 2, screenY, 4, 15);
         
-        // Draw traffic light box
-        g2d.setColor(Color.BLACK);
-        g2d.fillRect(screenX - 6, screenY - 12, 12, 12);
+        // Draw traffic light box with metallic look
+        g2d.setColor(new Color(40, 40, 40));
+        g2d.fillRoundRect(screenX - 6, screenY - 18, 12, 18, 3, 3);
         
-        // Draw colored light
-        g2d.setColor(light.getState().getColor());
-        g2d.fillOval(screenX - 4, screenY - 10, 8, 8);
+        // Draw all three light positions (dimmed)
+        g2d.setColor(new Color(80, 20, 20));
+        g2d.fillOval(screenX - 4, screenY - 16, 8, 5);
+        g2d.setColor(new Color(80, 80, 20));
+        g2d.fillOval(screenX - 4, screenY - 10, 8, 5);
+        g2d.setColor(new Color(20, 80, 20));
+        g2d.fillOval(screenX - 4, screenY - 4, 8, 5);
+        
+        // Draw active light with glow
+        Color lightColor = light.getState().getColor();
+        int lightY = screenY - 16;
+        if (lightColor.getGreen() > 200) { // Green
+            lightY = screenY - 4;
+        } else if (lightColor.getGreen() > 150 && lightColor.getRed() > 150) { // Yellow
+            lightY = screenY - 10;
+        }
+        
+        // Draw glow effect
+        g2d.setColor(new Color(lightColor.getRed(), lightColor.getGreen(), lightColor.getBlue(), 100));
+        g2d.fillOval(screenX - 6, lightY - 2, 12, 9);
+        
+        // Draw bright light
+        g2d.setColor(lightColor);
+        g2d.fillOval(screenX - 4, lightY, 8, 5);
+        
+        // Add shine
+        g2d.setColor(new Color(255, 255, 255, 180));
+        g2d.fillOval(screenX - 2, lightY + 1, 3, 2);
     }
     
     public void setToolMode(ToolMode mode) {
