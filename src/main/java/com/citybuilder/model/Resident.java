@@ -8,13 +8,23 @@ public class Resident {
     private ResidentMood mood;
     private int happiness; // 0-100
     private int x, y; // Location
+    private int age; // Age in years
+    private int birthYear;
+    private boolean sleeping;
     
-    public Resident(int x, int y) {
+    public Resident(int x, int y, int birthYear) {
         this.x = x;
         this.y = y;
         this.happiness = 75;
         this.mood = ResidentMood.CONTENT;
         this.name = "Citizen";
+        this.age = 0;
+        this.birthYear = birthYear;
+        this.sleeping = false;
+    }
+    
+    public void updateAge(int currentYear) {
+        this.age = currentYear - birthYear;
     }
     
     public void updateMood() {
@@ -31,9 +41,31 @@ public class Resident {
         }
     }
     
+    public void updateForTimeOfDay(TimeOfDay timeOfDay) {
+        // Residents sleep at night
+        sleeping = timeOfDay.isNight();
+        
+        // Adjust happiness based on time of day
+        if (timeOfDay == TimeOfDay.NIGHT && !sleeping) {
+            adjustHappiness(-1); // Unhappy if not sleeping at night
+        }
+    }
+    
     public void adjustHappiness(int amount) {
         happiness = Math.max(0, Math.min(100, happiness + amount));
         updateMood();
+    }
+    
+    public boolean isElderly() {
+        return age >= 65;
+    }
+    
+    public boolean isAdult() {
+        return age >= 18 && age < 65;
+    }
+    
+    public boolean isChild() {
+        return age < 18;
     }
     
     public ResidentMood getMood() {
@@ -42,6 +74,18 @@ public class Resident {
     
     public int getHappiness() {
         return happiness;
+    }
+    
+    public int getAge() {
+        return age;
+    }
+    
+    public int getBirthYear() {
+        return birthYear;
+    }
+    
+    public boolean isSleeping() {
+        return sleeping;
     }
     
     public int getX() {

@@ -228,6 +228,15 @@ public class GamePanel extends JPanel {
         for (TrafficLight light : gameState.getTrafficLights()) {
             renderTrafficLight(g2d, light);
         }
+        
+        // Apply day/night overlay
+        TimeOfDay timeOfDay = gameState.getCurrentTimeOfDay();
+        float brightness = timeOfDay.getBrightness();
+        if (brightness < 1.0f) {
+            int alpha = (int) ((1.0f - brightness) * 128);
+            g2d.setColor(new Color(0, 0, 30, alpha));
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+        }
     }
     
     private void renderTile(Graphics2D g2d, Tile tile, int gridX, int gridY) {
@@ -379,6 +388,14 @@ public class GamePanel extends JPanel {
                 return new Color(50, 50, 50);
             case PARK:
                 return new Color(50, 150, 50);
+            case AIRPORT:
+                return new Color(120, 120, 180);
+            case RUNWAY:
+                return new Color(90, 90, 90);
+            case HANGAR:
+                return new Color(100, 100, 150);
+            case CONTROL_TOWER:
+                return new Color(140, 140, 200);
             default:
                 return Color.GRAY;
         }
@@ -409,6 +426,10 @@ public class GamePanel extends JPanel {
             case CINEMA: return "CIN";
             case GYM: return "GYM";
             case LIBRARY: return "LIB";
+            case AIRPORT: return "AIR";
+            case RUNWAY: return "RWY";
+            case HANGAR: return "HGR";
+            case CONTROL_TOWER: return "TWR";
             default: return "?";
         }
     }

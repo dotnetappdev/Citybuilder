@@ -26,7 +26,11 @@ public enum BuildingType {
     MALL("Shopping Mall", 4000, 0),
     CINEMA("Cinema", 2200, 0),
     GYM("Gym", 1800, 0),
-    LIBRARY("Library", 2000, 0);
+    LIBRARY("Library", 2000, 0),
+    AIRPORT("Airport", 10000, 0),
+    RUNWAY("Runway", 5000, 0),
+    HANGAR("Hangar", 3000, 0),
+    CONTROL_TOWER("Control Tower", 2500, 0);
     
     private final String name;
     private final int cost;
@@ -69,6 +73,8 @@ public enum BuildingType {
                 return 50; // Tax
             case APARTMENT:
                 return 100; // Tax
+            case AIRPORT:
+                return 500; // High income from tourism
             default:
                 return 0;
         }
@@ -94,6 +100,11 @@ public enum BuildingType {
                 return 5;
             case TRAFFIC_LIGHT:
                 return 10;
+            case AIRPORT:
+            case RUNWAY:
+            case HANGAR:
+            case CONTROL_TOWER:
+                return 150; // High maintenance for airport facilities
             default:
                 return 0;
         }

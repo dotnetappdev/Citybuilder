@@ -28,11 +28,21 @@ public class GameState {
     private List<TrafficLight> trafficLights;
     private transient Camera camera;
     
+    // New systems
+    private Currency currency;
+    private GameDate gameDate;
+    private CityBudget cityBudget;
+    private TimeOfDay currentTimeOfDay;
+    
     public GameState() {
         this.camera = new Camera();
         this.residents = new ArrayList<>();
         this.vehicles = new ArrayList<>();
         this.trafficLights = new ArrayList<>();
+        this.currency = Currency.USD;
+        this.gameDate = new GameDate(2000);
+        this.cityBudget = new CityBudget(50000);
+        this.currentTimeOfDay = TimeOfDay.MORNING;
     }
     
     public void initializeNewGame() {
@@ -47,6 +57,10 @@ public class GameState {
         this.monthlyIncome = 0;
         this.monthlyExpenses = 0;
         this.cityHappiness = 75.0;
+        this.currency = Currency.USD;
+        this.gameDate = new GameDate(2000);
+        this.cityBudget = new CityBudget(50000);
+        this.currentTimeOfDay = TimeOfDay.MORNING;
     }
     
     public CityMap getCityMap() {
@@ -110,6 +124,53 @@ public class GameState {
         trafficLights.add(light);
     }
     
+    public Currency getCurrency() {
+        return currency;
+    }
+    
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+    }
+    
+    public GameDate getGameDate() {
+        return gameDate;
+    }
+    
+    public CityBudget getCityBudget() {
+        return cityBudget;
+    }
+    
+    public TimeOfDay getCurrentTimeOfDay() {
+        return currentTimeOfDay;
+    }
+    
+    public void advanceTime() {
+        gameDate.advanceHour();
+        TimeOfDay newTime = gameDate.getTimeOfDay();
+        
+        // Update time of day
+        if (newTime != currentTimeOfDay) {
+            currentTimeOfDay = newTime;
+            updateForTimeOfDay();
+        }
+    }
+    
+    private void updateForTimeOfDay() {
+        // Update all residents for time of day
+        for (Resident resident : residents) {
+            resident.updateForTimeOfDay(currentTimeOfDay);
+        }
+        
+        // Fewer vehicles spawn at night
+        if (currentTimeOfDay.isNight()) {
+            // Remove some vehicles to simulate less traffic at night
+            int toRemove = vehicles.size() / 3;
+            for (int i = 0; i < toRemove && !vehicles.isEmpty(); i++) {
+                vehicles.remove(0);
+            }
+        }
+    }
+    
     public int getMonthlyIncome() {
         return monthlyIncome;
     }
@@ -129,31 +190,83 @@ public class GameState {
     public void updateMonthly() {
         gameMonth++;
         
-        // Calculate income and expenses
-        monthlyIncome = 0;
-        monthlyExpenses = 0;
+        // Calculate income and expenses by category
+        int resTax = 0, comTax = 0, indTax = 0;
+        int transCost = 0, healthCost = 0, eduCost = 0, safetyCost = 0, utilCost = 0;
         
         for (int x = 0; x < cityMap.getWidth(); x++) {
             for (int y = 0; y < cityMap.getHeight(); y++) {
                 Tile tile = cityMap.getTile(x, y);
                 Building building = tile.getBuilding();
                 if (building != null) {
-                    monthlyIncome += building.getType().getMonthlyIncome();
-                    monthlyExpenses += building.getType().getMonthlyCost();
+                    int income = building.getType().getMonthlyIncome();
+                    int cost = building.getType().getMonthlyCost();
+                    
+                    monthlyIncome += income;
+                    monthlyExpenses += cost;
+                    
+                    // Categorize by building type
+                    if (building.getType() == BuildingType.HOUSE || 
+                        building.getType() == BuildingType.APARTMENT) {
+                        resTax += income;
+                    } else if (building.getType() == BuildingType.SHOP ||
+                              building.getType() == BuildingType.MALL ||
+                              building.getType() == BuildingType.RESTAURANT ||
+                              building.getType() == BuildingType.FAST_FOOD) {
+                        comTax += income;
+                    } else if (building.getType() == BuildingType.FACTORY ||
+                              building.getType() == BuildingType.OFFICE) {
+                        indTax += income;
+                    }
+                    
+                    // Categorize expenses
+                    if (building.getType() == BuildingType.ROAD ||
+                        building.getType() == BuildingType.ROUNDABOUT ||
+                        building.getType() == BuildingType.TRAFFIC_LIGHT) {
+                        transCost += cost;
+                    } else if (building.getType() == BuildingType.HOSPITAL) {
+                        healthCost += cost;
+                    } else if (building.getType() == BuildingType.SCHOOL ||
+                              building.getType() == BuildingType.LIBRARY) {
+                        eduCost += cost;
+                    } else if (building.getType() == BuildingType.POLICE_STATION ||
+                              building.getType() == BuildingType.FIRE_STATION) {
+                        safetyCost += cost;
+                    } else if (building.getType() == BuildingType.POWER_PLANT ||
+                              building.getType() == BuildingType.WATER_TOWER) {
+                        utilCost += cost;
+                    }
                 }
             }
         }
         
+        // Update city budget
+        cityBudget.setResidentialTax(resTax);
+        cityBudget.setCommercialTax(comTax);
+        cityBudget.setIndustrialTax(indTax);
+        cityBudget.setTransportationCost(transCost);
+        cityBudget.setHealthcareCost(healthCost);
+        cityBudget.setEducationCost(eduCost);
+        cityBudget.setPublicsafetyCost(safetyCost);
+        cityBudget.setUtilitiesCost(utilCost);
+        cityBudget.calculateMonthly();
+        
         int netIncome = monthlyIncome - monthlyExpenses;
         addMoney(netIncome);
+        cityBudget.addIncome(netIncome);
         
         // Update city happiness
         updateCityHappiness();
         
-        // Update residents
+        // Update residents - age them
+        int currentYear = gameDate.getYear();
         for (Resident resident : residents) {
+            resident.updateAge(currentYear);
             resident.updateMood();
         }
+        
+        // Advance date by one month
+        gameDate.advanceMonth();
     }
     
     private void updateCityHappiness() {

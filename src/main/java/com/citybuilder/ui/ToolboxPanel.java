@@ -97,6 +97,14 @@ public class ToolboxPanel extends JPanel {
         addBuildingButton("Water Tower", BuildingType.WATER_TOWER);
         add(Box.createRigidArea(new Dimension(0, 10)));
         
+        // Transportation section
+        addSectionLabel("Transportation");
+        addBuildingButton("Airport", BuildingType.AIRPORT);
+        addBuildingButton("Runway", BuildingType.RUNWAY);
+        addBuildingButton("Hangar", BuildingType.HANGAR);
+        addBuildingButton("Control Tower", BuildingType.CONTROL_TOWER);
+        add(Box.createRigidArea(new Dimension(0, 10)));
+        
         // Other section
         addSectionLabel("Other");
         addBuildingButton("Park", BuildingType.PARK);

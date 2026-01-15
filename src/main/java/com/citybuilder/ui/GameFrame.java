@@ -55,6 +55,13 @@ public class GameFrame extends JFrame {
         });
         fastTimer.start();
         
+        // Time advancement timer (1 second = 1 game hour)
+        Timer timeTimer = new Timer(1000, e -> {
+            gameState.advanceTime();
+            gamePanel.repaint(); // Repaint for day/night effect
+        });
+        timeTimer.start();
+        
         // Monthly update timer (3 seconds = 1 game month)
         Timer monthlyTimer = new Timer(3000, e -> {
             gameState.updateMonthly();
@@ -111,7 +118,7 @@ public class GameFrame extends JFrame {
                     if (tile.hasElectricity() && tile.hasWater()) {
                         for (int i = 0; i < building.getType().getResidents() / RESIDENT_SPAWN_DIVISOR; i++) {
                             if (gameState.getPopulation() < totalCapacity) {
-                                Resident resident = new Resident(x, y);
+                                Resident resident = new Resident(x, y, gameState.getGameDate().getYear());
                                 resident.adjustHappiness(10); // Happy with utilities
                                 gameState.addResident(resident);
                             }
