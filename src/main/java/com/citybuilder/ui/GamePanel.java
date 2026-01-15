@@ -161,6 +161,12 @@ public class GamePanel extends JPanel {
                 case LOWER_TERRAIN:
                     tile.lowerHeight();
                     break;
+                    
+                case SET_TRAFFIC_DIRECTION:
+                    if (tile.isRoad()) {
+                        tile.cycleTrafficDirection();
+                    }
+                    break;
             }
             
             repaint();
@@ -290,6 +296,11 @@ public class GamePanel extends JPanel {
         // Draw building or natural feature
         if (tile.getBuilding() != null) {
             drawBuilding(g2d, tile.getBuilding(), screenX, screenY);
+            
+            // Draw traffic direction arrow on roads
+            if (tile.isRoad()) {
+                drawTrafficArrow(g2d, tile.getTrafficDirection(), screenX, screenY);
+            }
         } else if (tile.getNaturalFeature() != null) {
             drawNaturalFeature(g2d, tile.getNaturalFeature(), screenX, screenY);
         }
@@ -472,6 +483,19 @@ public class GamePanel extends JPanel {
         g2d.fillRect(screenX - 8, screenY - 4, 16, 8);
         g2d.setColor(Color.BLACK);
         g2d.drawRect(screenX - 8, screenY - 4, 16, 8);
+    }
+    
+    private void drawTrafficArrow(Graphics2D g2d, TrafficDirection direction, int x, int y) {
+        // Draw traffic direction arrow on the road
+        g2d.setColor(new Color(255, 255, 0, 200)); // Semi-transparent yellow
+        g2d.setFont(new Font("Arial", Font.BOLD, 20));
+        
+        String arrow = direction.getArrow();
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(arrow);
+        int textHeight = fm.getAscent();
+        
+        g2d.drawString(arrow, x - textWidth / 2, y + textHeight / 4);
     }
     
     private void renderTrafficLight(Graphics2D g2d, TrafficLight light) {

@@ -52,6 +52,7 @@ public class ToolboxPanel extends JPanel {
         addBuildingButton("Road", BuildingType.ROAD);
         addBuildingButton("Roundabout", BuildingType.ROUNDABOUT);
         addBuildingButton("Traffic Light", BuildingType.TRAFFIC_LIGHT);
+        addToolButton("Set Traffic Flow", e -> gamePanel.setToolMode(ToolMode.SET_TRAFFIC_DIRECTION));
         add(Box.createRigidArea(new Dimension(0, 10)));
         
         // Residential buildings section

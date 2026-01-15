@@ -54,14 +54,14 @@ public class RadialMenu extends JPanel {
     
     private void initializeMenuItems() {
         // Quick access items
-        menuItems.add(new RadialMenuItem("Build", "Hammer", ToolMode.BUILD));
-        menuItems.add(new RadialMenuItem("Demolish", "X", ToolMode.DEMOLISH));
-        menuItems.add(new RadialMenuItem("Road", "=", BuildingType.ROAD));
-        menuItems.add(new RadialMenuItem("House", "H", BuildingType.HOUSE));
-        menuItems.add(new RadialMenuItem("Restaurant", "R", BuildingType.RESTAURANT));
-        menuItems.add(new RadialMenuItem("Shop", "S", BuildingType.SHOP));
-        menuItems.add(new RadialMenuItem("Terrain+", "^", ToolMode.RAISE_TERRAIN));
-        menuItems.add(new RadialMenuItem("Terrain-", "v", ToolMode.LOWER_TERRAIN));
+        menuItems.add(new RadialMenuItem("Build", "🔨", ToolMode.BUILD));
+        menuItems.add(new RadialMenuItem("Demolish", "✖", ToolMode.DEMOLISH));
+        menuItems.add(new RadialMenuItem("Road", "═", BuildingType.ROAD));
+        menuItems.add(new RadialMenuItem("House", "🏠", BuildingType.HOUSE));
+        menuItems.add(new RadialMenuItem("Restaurant", "🍽", BuildingType.RESTAURANT));
+        menuItems.add(new RadialMenuItem("Shop", "🛒", BuildingType.SHOP));
+        menuItems.add(new RadialMenuItem("Traffic", "🚦", ToolMode.SET_TRAFFIC_DIRECTION));
+        menuItems.add(new RadialMenuItem("Terrain", "⛰", ToolMode.RAISE_TERRAIN));
     }
     
     public void show(Point location) {

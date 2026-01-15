@@ -13,6 +13,7 @@ public class Tile {
     private NaturalFeature naturalFeature;
     private boolean hasElectricity;
     private boolean hasWater;
+    private TrafficDirection trafficDirection;
     
     public Tile(int x, int y) {
         this.x = x;
@@ -24,6 +25,7 @@ public class Tile {
         this.naturalFeature = null;
         this.hasElectricity = false;
         this.hasWater = false;
+        this.trafficDirection = TrafficDirection.ALL_DIRECTIONS;
     }
     
     public int getX() {
@@ -98,6 +100,24 @@ public class Tile {
         this.hasWater = hasWater;
     }
     
+    public TrafficDirection getTrafficDirection() {
+        return trafficDirection;
+    }
+    
+    public void setTrafficDirection(TrafficDirection trafficDirection) {
+        this.trafficDirection = trafficDirection;
+    }
+    
+    public void cycleTrafficDirection() {
+        this.trafficDirection = trafficDirection.next();
+    }
+    
+    public boolean isRoad() {
+        return building != null && 
+               (building.getType() == BuildingType.ROAD || 
+                building.getType() == BuildingType.ROUNDABOUT);
+    }
+    
     public boolean isEmpty() {
         return building == null && naturalFeature == null && 
                terrainType != TerrainType.WATER;
@@ -107,5 +127,6 @@ public class Tile {
         this.building = null;
         this.naturalFeature = null;
         this.zoneType = ZoneType.NONE;
+        this.trafficDirection = TrafficDirection.ALL_DIRECTIONS;
     }
 }
